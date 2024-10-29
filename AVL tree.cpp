@@ -112,11 +112,84 @@ void preorder(Node* root)
     preorder(root->left);
     preorder(root->right);
 }
-
+Node* minnode(Node* root)
+{
+    Node* curr = root;
+    while(curr->left !=nullptr)
+    curr=curr->left;
+    
+    return curr;
+}
+Node* deleteNode(Node* root,int k)
+{
+    if(root==nullptr)return root;
+    
+    if(k<root->data)
+    root->left = deleteNode(root->left,k);
+    else if(k>root->data)
+    root->right = deleteNode(root->right,k);
+    else
+    {
+        if(root->left==nullptr || root->right==nullptr)
+        {
+            Node* temp = root->left ?root->left:root->right;
+            
+            if(temp==nullptr)
+            {
+                temp = root;
+                root = nullptr;
+            }
+            else
+            {
+                *root = *temp;
+            }
+            delete temp;
+        }
+        else
+        {
+            Node* temp = minnode(root->right);
+            root->data = temp->data;
+            root->right = deleteNode(root->right,temp->data);
+        }
+        
+        if(!root)
+        return root;
+        
+        //update h
+        root->h = 1+max(height(root->left),height(root->right));
+        
+        int b = balance(root);
+        
+        //LL case 
+        if(b > 1 && balance(root->left)>=0)
+        return RR(root);
+        
+        //LR case
+        if(b>1 && balance(root->left)< 0)
+        {
+            root->left = LL(root->left);
+            return RR(root);
+        }
+        
+        //RR case
+        if(b<-1 && balance(root->right)<=0)
+        return LL(root);
+        
+        //RL case 
+        if(b<-1 && balance(root->right)>0)
+        {
+            root->right = RR(root->right);
+            return LL(root);
+        }
+        
+    }
+    return root;
+}
 int main()
 {
     int arr[10]={5,1,2,3,4,6,7,8,9,0};
     Node* root=nullptr;
-    root= buildAVL(arr,10);
-    preorder(root);
+    root = buildAVL(arr,10);
+    root = deleteNode(root,6);
+   preorder(root);
 }
